@@ -30,13 +30,18 @@ def after_request(response):
 app.jinja_env.filters["usd"] = usd
 
 # Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_FILE_DIR"] = mkdtemp()
+#app.config["SESSION_FILE_DIR"] = mkdtemp()
+app.secret_key = 'A0AKR5TGD\ R~XHH!jmN]LWX/,?RT'
+# app.config['SECRET_KEY'] = os.urandom(24)
+# this is important or wont work
+app.config['SESSION_COOKIE_NAME'] = "my_session"
+# Configure Database
+db = SQL(os.getenv("DATABASE_URL"))
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-# Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///finance.db")
+
 
 # Make sure API key is set
 if not os.environ.get("API_KEY"):

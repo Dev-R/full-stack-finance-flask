@@ -56,7 +56,7 @@ def index():
     user_stock_dict = db.execute("SELECT * FROM stocks WHERE user_id = ?", str(session["user_id"]))
     
     # Get user current cash balance
-    user_balance = ((db.execute("SELECT cash FROM users WHERE id = ?", str(session["user_id"])))[0]['cash'])
+    user_balance = ((db.execute("SELECT cash FROM users WHERE id = ?", session["user_id"]))[0]['cash'])
     
     # Store stock info  share, current_price
     stock_data = dict()
@@ -143,7 +143,7 @@ def buy():
             user_symbol = user_symbol.upper()
             
             # Get user cash balance
-            user_current_balance = ((db.execute("SELECT cash FROM users WHERE id = ?", str(session["user_id"])))[0]['cash'])
+            user_current_balance = ((db.execute("SELECT cash FROM users WHERE id = ?", session["user_id"]))[0]['cash'])
             user_balance_after = user_current_balance - (quote_dict['price'] * int(user_share))
             
             # Verify user entered a symbol
@@ -155,7 +155,7 @@ def buy():
                 error_type = "YOU CAN'T AFFORD IT :("; raise exception;
                 
             # Deduct cash from user balance
-            db.execute("UPDATE users SET cash = ? WHERE id = ?", user_balance_after,  str(session["user_id"]))
+            db.execute("UPDATE users SET cash = ? WHERE id = ?", user_balance_after,  session["user_id"]))
             """
             # Check if user already have same stock
             if len(db.execute("SELECT stock_name FROM stocks WHERE user_id = ? AND stock_symbol = ?", str(session["user_id"]), user_symbol)) != 0:
@@ -347,7 +347,7 @@ def sell():
             
             # Get user cash balance
             user_current_balance = ((db.execute("SELECT cash FROM users WHERE id = ?", 
-                                     str(session["user_id"])))[0]['cash'])
+                                     session["user_id"]))[0]['cash'])
             
             # Get user balance after selling
             user_balance_after_selling = user_current_balance + total_share_cost
@@ -384,7 +384,7 @@ def sell():
             remaining_share = total_user_share_num - int(user_share)
     
             # Add balance to user
-            db.execute("UPDATE users SET cash = ? WHERE id = ?", user_balance_after_selling, str(session["user_id"]))
+            db.execute("UPDATE users SET cash = ? WHERE id = ?", user_balance_after_selling, session["user_id"])
             
             # Reduce user number of shares 
             db.execute("UPDATE stocks SET number_shares = ? WHERE user_id = ? AND stock_symbol = ?",

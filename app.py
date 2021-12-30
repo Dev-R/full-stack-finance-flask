@@ -174,6 +174,7 @@ def buy():
     except:
         flash(error_type)
         print("TEST 3")
+        print(session)
         return render_template(error_dir)
 
 

@@ -105,6 +105,7 @@ def buy():
     error_type = None
     error_dir = "buy.html"
     try:
+        
         if request.method == "POST":
             # Get purchase time/date:
             purchase_d_t = request.form.get("local_time")
@@ -166,8 +167,9 @@ def buy():
             db.execute("INSERT INTO stocks (stock_symbol, stock_name , purchase_price, number_shares, user_id, purchase_time) VALUES(?, ?, ?, ?, ?, ?)", 
                        user_symbol, quote_dict['name'],  usd(quote_dict['price']), user_share, str(session["user_id"]), purchase_d_t)
             return redirect("/")
-        print("TEST 1")
+            print("TEST 1")
         else:
+            
             print("TEST 2")
             return render_template("buy.html")
     except:

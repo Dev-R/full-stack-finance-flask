@@ -161,15 +161,18 @@ def buy():
             if len(db.execute("SELECT stock_name FROM stocks WHERE user_id = ? AND stock_symbol = ?", str(session["user_id"]), user_symbol)) != 0:
                 # Update num of user shares of the quote
                 db.execute("UPDATE stocks SET number_shares = number_shares + ? WHERE user_id = ? AND stock_symbol = ?" , user_share, str(session["user_id"]), user_symbol)
-            """
-    
+            """ 
+            print("TEST 0")
             db.execute("INSERT INTO stocks (stock_symbol, stock_name , purchase_price, number_shares, user_id, purchase_time) VALUES(?, ?, ?, ?, ?, ?)", 
                        user_symbol, quote_dict['name'],  usd(quote_dict['price']), user_share, str(session["user_id"]), purchase_d_t)
             return redirect("/")
+        print("TEST 1")
         else:
+            print("TEST 2")
             return render_template("buy.html")
     except:
         flash(error_type)
+        print("TEST 3")
         return render_template(error_dir)
 
 

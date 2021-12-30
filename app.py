@@ -42,7 +42,6 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 
-
 # Make sure API key is set
 if not os.environ.get("API_KEY"):
     raise RuntimeError("API_KEY not set")
@@ -53,7 +52,7 @@ if not os.environ.get("API_KEY"):
 def index():
     """index page of site"""
     # Get user stock data from Database
-    user_stock_dict = db.execute("SELECT * FROM stocks WHERE user_id = ?", str(session["user_id"]))
+    user_stock_dict = db.execute("SELECT * FROM stocks WHERE user_id = ?", session["user_id"])
     
     # Get user current cash balance
     user_balance = ((db.execute("SELECT cash FROM users WHERE id = ?", session["user_id"]))[0]['cash'])
@@ -103,7 +102,7 @@ def index():
 def buy():
     """Buy shares of stock"""
     error_type = None
-    error_dir = "buy.html"
+    error_dir = "/buy"
     try:
         
         if request.method == "POST":
@@ -132,8 +131,7 @@ def buy():
                 error_type = "cannot purchase partial/negative shares ;)"; raise exception;
             
              # Verify user entered a valid share
-            elif not user_share and int(user_share) <= 0:
-    
+            elif not user_share or int(user_share) <= 0:
                 # elif not user_share or not int(user_share) or int(user_share)<=0 or float(user_share):
                 error_type = "invalid share"; raise exception;
                      
@@ -159,23 +157,18 @@ def buy():
             db.execute("UPDATE users SET cash = ? WHERE id = ?", user_balance_after,  session["user_id"])
             """
             # Check if user already have same stock
-            if len(db.execute("SELECT stock_name FROM stocks WHERE user_id = ? AND stock_symbol = ?", str(session["user_id"]), user_symbol)) != 0:
+            if len(db.execute("SELECT stock_name FROM stocks WHERE user_id = ? AND stock_symbol = ?", session["user_id"], user_symbol)) != 0:
                 # Update num of user shares of the quote
-                db.execute("UPDATE stocks SET number_shares = number_shares + ? WHERE user_id = ? AND stock_symbol = ?" , user_share, str(session["user_id"]), user_symbol)
+                db.execute("UPDATE stocks SET number_shares = number_shares + ? WHERE user_id = ? AND stock_symbol = ?" , user_share, session["user_id"], user_symbol)
             """ 
-            x = db.execute("INSERT INTO stocks (stock_symbol, stock_name , purchase_price, number_shares, user_id, purchase_time) VALUES(?, ?, ?, ?, ?, ?)", 
-                       user_symbol, quote_dict['name'],  usd(quote_dict['price']), user_share, str(session["user_id"]), purchase_d_t)
-            print("TEST 0")
-            return redirect("index.html")
-            print("TEST 1")
+            db.execute("INSERT INTO stocks (stock_symbol, stock_name , purchase_price, number_shares, user_id, purchase_time) VALUES(?, ?, ?, ?, ?, ?)", 
+                       user_symbol, quote_dict['name'],  quote_dict['price'], user_share, session["user_id"], purchase_d_t)
+            return redirect("/")
         else:
-            print("TEST 2")
-            return render_template("index.html")
+            return render_template("buy.html")
     except:
         flash(error_type)
-        print("TEST 3")
-        print(session)
-        return render_template(error_dir)
+        return redirect(error_dir)
 
 
 @app.route("/history")
@@ -183,9 +176,9 @@ def buy():
 def history():
     """Show history of transactions"""
     error_type = None
-    error_dir = "history.html"
+    error_dir = "/history"
     # Get user stock data from Database
-    user_stock_dict = db.execute("SELECT * FROM stocks WHERE user_id = ? ORDER BY order_id DESC", str(session["user_id"]))
+    user_stock_dict = db.execute("SELECT * FROM stocks WHERE user_id = ? ORDER BY order_id DESC", session["user_id"])
     '''
     # Store stock info  share, current_price
     stock_data = dict()
@@ -204,7 +197,6 @@ def login():
     # Forget any user_id
     session.clear()
     try:
-            
         # User reached route via POST (as by submitting a form via POST)
         if request.method == "POST":
     
@@ -253,7 +245,7 @@ def logout():
 def quote():
     """Get stock quote."""
     error_type = None
-    error_dir = "quote.html"
+    error_dir = "/quote"
     try:
             
         if request.method == "POST":
@@ -276,14 +268,14 @@ def quote():
             return render_template("quote.html")
     except:
         flash(error_type)
-        return render_template(error_dir)
+        return redirect(error_dir)
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user""" 
     error_type = None
-    error_dir = "register.html"
+    error_dir = "/register"
     try:
         if request.method == "POST":
             username = request.form.get('username')
@@ -307,7 +299,7 @@ def register():
             return render_template('register.html')
     except Exception:
         flash(error_type)
-        return render_template(error_dir)
+        return redirect(error_dir)
         
         
 @app.route("/sell", methods=["GET", "POST"])
@@ -315,7 +307,7 @@ def register():
 def sell():
     """Allow user to sell stocks"""
     error_type = None
-    error_dir = "sell.html"
+    error_dir = "/sell"
     try:
         if request.method == "POST":
             
@@ -323,15 +315,13 @@ def sell():
             user_share = request.form.get("shares")
             # Get stock’s symbol name user chose
             user_symbol = request.form.get("symbol")
-            
+            print(user_share)
             # Verify user did not enter a non-integer share
             if not user_share.isdigit():
                 error_type = "cannot sell partial/negative shares ;)"; raise exception;
-                
              # Verify user entered a valid share
-            elif not user_share and int(user_share) <= 0:
+            elif not user_share or (int(user_share) <= 0):
                 error_type = "invalid share"; raise exception;
-                
             # Verify user entered a  quote
             elif not user_symbol:
                 error_type = "invalid symbol"; raise exception;
@@ -365,7 +355,7 @@ def sell():
     
             # Get user number of share of the symbol
             user_share_num = (db.execute("SELECT number_shares FROM stocks WHERE user_id = ? AND stock_symbol = ? ",
-                              str(session["user_id"]), user_symbol))
+                              session["user_id"], user_symbol))
             
             # Verify user own a valid/enough share
             if not user_share_num:
@@ -379,37 +369,37 @@ def sell():
             elif not (len(user_share_num) >= 1):
                 
                 # Assign single stock share to total
-                total_user_share_num = user_share_num[0]['number_shares']
-                    
+                total_user_share_num = int(user_share_num[0]['number_shares'])
+            print(total_user_share_num)
             # Check if user have enough num of shares
             if total_user_share_num - int(user_share) < 0:
-                error_type = "too many shares"; raise exception;
+                error_type = "You Don't Have Enough Shares"; raise exception;
                 
             # Remaining number of share after selling
             remaining_share = total_user_share_num - int(user_share)
-    
+            print(remaining_share)
             # Add balance to user
             db.execute("UPDATE users SET cash = ? WHERE id = ?", user_balance_after_selling, session["user_id"])
             
             # Reduce user number of shares 
             db.execute("UPDATE stocks SET number_shares = ? WHERE user_id = ? AND stock_symbol = ?",
-                       remaining_share, str(session["user_id"]), user_symbol)
+                       remaining_share, session["user_id"], user_symbol)
             
             # Drop user stock from stock database, if zero amount of stock share left
             if remaining_share == 0:
-                db.execute("DELETE FROM stocks WHERE user_id = ? AND stock_symbol = ? ", str(session["user_id"]), user_symbol)
+                db.execute("DELETE FROM stocks WHERE user_id = ? AND stock_symbol = ? ", session["user_id"], user_symbol)
                 
             return redirect("/")
             
         else:
                     
             # Get user purchased stocks
-            user_stocks = (db.execute("SELECT DISTINCT stock_symbol  FROM stocks WHERE user_id = ? ", str(session["user_id"])))
+            user_stocks = (db.execute("SELECT DISTINCT stock_symbol  FROM stocks WHERE user_id = ? ", session["user_id"]))
             
             return render_template("sell.html", stocks=user_stocks)
     except:
         flash(error_type)
-        return render_template(error_dir)
+        return redirect(error_dir)
 
 
 def errorhandler(error):
@@ -424,7 +414,7 @@ def errorhandler(error):
         if code == "500":
             session.clear()
         flash(error)
-        return render_template('index.html')
+        return render_template('login.html')
         
         
 # Listen for errors

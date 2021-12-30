@@ -53,10 +53,10 @@ if not os.environ.get("API_KEY"):
 def index():
     """index page of site"""
     # Get user stock data from Database
-    user_stock_dict = db.execute("SELECT * FROM stocks WHERE user_id = ?", session["user_id"])
+    user_stock_dict = db.execute("SELECT * FROM stocks WHERE user_id = ?", str(session["user_id"]))
     
     # Get user current cash balance
-    user_balance = ((db.execute("SELECT cash FROM users WHERE id = ?", session["user_id"]))[0]['cash'])
+    user_balance = ((db.execute("SELECT cash FROM users WHERE id = ?", str(session["user_id"])))[0]['cash'])
     
     # Store stock info  share, current_price
     stock_data = dict()
@@ -143,7 +143,7 @@ def buy():
             user_symbol = user_symbol.upper()
             
             # Get user cash balance
-            user_current_balance = ((db.execute("SELECT cash FROM users WHERE id = ?", session["user_id"]))[0]['cash'])
+            user_current_balance = ((db.execute("SELECT cash FROM users WHERE id = ?", str(session["user_id"])))[0]['cash'])
             user_balance_after = user_current_balance - (quote_dict['price'] * int(user_share))
             
             # Verify user entered a symbol
@@ -155,16 +155,16 @@ def buy():
                 error_type = "YOU CAN'T AFFORD IT :("; raise exception;
                 
             # Deduct cash from user balance
-            db.execute("UPDATE users SET cash = ? WHERE id = ?", user_balance_after,  session["user_id"])
+            db.execute("UPDATE users SET cash = ? WHERE id = ?", user_balance_after,  str(session["user_id"]))
             """
             # Check if user already have same stock
-            if len(db.execute("SELECT stock_name FROM stocks WHERE user_id = ? AND stock_symbol = ?", session["user_id"], user_symbol)) != 0:
+            if len(db.execute("SELECT stock_name FROM stocks WHERE user_id = ? AND stock_symbol = ?", str(session["user_id"]), user_symbol)) != 0:
                 # Update num of user shares of the quote
-                db.execute("UPDATE stocks SET number_shares = number_shares + ? WHERE user_id = ? AND stock_symbol = ?" , user_share, session["user_id"], user_symbol)
+                db.execute("UPDATE stocks SET number_shares = number_shares + ? WHERE user_id = ? AND stock_symbol = ?" , user_share, str(session["user_id"]), user_symbol)
             """
     
             db.execute("INSERT INTO stocks (stock_symbol, stock_name , purchase_price, number_shares, user_id, purchase_time) VALUES(?, ?, ?, ?, ?, ?)", 
-                       user_symbol, quote_dict['name'],  usd(quote_dict['price']), user_share, session["user_id"], purchase_d_t)
+                       user_symbol, quote_dict['name'],  usd(quote_dict['price']), user_share, str(session["user_id"]), purchase_d_t)
             return redirect("/")
         else:
             return render_template("buy.html")
@@ -180,7 +180,7 @@ def history():
     error_type = None
     error_dir = "history.html"
     # Get user stock data from Database
-    user_stock_dict = db.execute("SELECT * FROM stocks WHERE user_id = ? ORDER BY order_id DESC", session["user_id"])
+    user_stock_dict = db.execute("SELECT * FROM stocks WHERE user_id = ? ORDER BY order_id DESC", str(session["user_id"]))
     '''
     # Store stock info  share, current_price
     stock_data = dict()
@@ -347,7 +347,7 @@ def sell():
             
             # Get user cash balance
             user_current_balance = ((db.execute("SELECT cash FROM users WHERE id = ?", 
-                                     session["user_id"]))[0]['cash'])
+                                     str(session["user_id"])))[0]['cash'])
             
             # Get user balance after selling
             user_balance_after_selling = user_current_balance + total_share_cost
@@ -360,7 +360,7 @@ def sell():
     
             # Get user number of share of the symbol
             user_share_num = (db.execute("SELECT number_shares FROM stocks WHERE user_id = ? AND stock_symbol = ? ",
-                              session["user_id"], user_symbol))
+                              str(session["user_id"]), user_symbol))
             
             # Verify user own a valid/enough share
             if not user_share_num:
@@ -384,22 +384,22 @@ def sell():
             remaining_share = total_user_share_num - int(user_share)
     
             # Add balance to user
-            db.execute("UPDATE users SET cash = ? WHERE id = ?", user_balance_after_selling, session["user_id"])
+            db.execute("UPDATE users SET cash = ? WHERE id = ?", user_balance_after_selling, str(session["user_id"]))
             
             # Reduce user number of shares 
             db.execute("UPDATE stocks SET number_shares = ? WHERE user_id = ? AND stock_symbol = ?",
-                       remaining_share, session["user_id"], user_symbol)
+                       remaining_share, str(session["user_id"]), user_symbol)
             
             # Drop user stock from stock database, if zero amount of stock share left
             if remaining_share == 0:
-                db.execute("DELETE FROM stocks WHERE user_id = ? AND stock_symbol = ? ", session["user_id"], user_symbol)
+                db.execute("DELETE FROM stocks WHERE user_id = ? AND stock_symbol = ? ", str(session["user_id"]), user_symbol)
                 
             return redirect("/")
             
         else:
                     
             # Get user purchased stocks
-            user_stocks = (db.execute("SELECT DISTINCT stock_symbol  FROM stocks WHERE user_id = ? ", session["user_id"]))
+            user_stocks = (db.execute("SELECT DISTINCT stock_symbol  FROM stocks WHERE user_id = ? ", str(session["user_id"])))
             
             return render_template("sell.html", stocks=user_stocks)
     except:

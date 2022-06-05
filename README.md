@@ -4,4 +4,4 @@ Dev-R Finance is an enhanced Version of C$50 Finance, a full-stack real-time sto
 - Implementation Of PostgreSQL
 - Implementation Of Flask Flash
 ## Demonstation
-![alt text](https://dev-r.github.io/portfolio/projects/dev-r.gif?raw=true)
+![alt text](https://dev-r.github.io/static-portfolio/projects/dev-r.gif?raw=true)

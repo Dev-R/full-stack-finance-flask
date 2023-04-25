@@ -94,7 +94,7 @@ six==1.16.0
 sortedcontainers==2.4.0
 soupsieve==2.2.1
 SQLAlchemy==1.4.23
-sqlparse==0.4.1
+sqlparse==0.4.4
 style50==2.7.5
 submit50==3.1.0
 tenacity==8.0.1

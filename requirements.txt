@@ -107,7 +107,7 @@ urllib3==1.26.6
 virtualenv==20.7.2
 weasyprint==53.2
 webencodings==0.5.1
-Werkzeug==1.0.1
+Werkzeug==2.2.3
 wrapt==1.12.1
 zope.interface==5.4.0
 zopfli==0.1.8

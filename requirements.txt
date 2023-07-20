@@ -70,7 +70,7 @@ pyasn1==0.4.8
 pycodestyle==2.7.0
 pycparser==2.20
 pydyf==0.1.1
-Pygments==2.10.0
+Pygments==2.15.0
 pyinstaller==4.6
 pyinstaller-hooks-contrib==2021.3
 pylint==2.10.2
